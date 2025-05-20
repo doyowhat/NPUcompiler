@@ -86,10 +86,14 @@ enum class ast_operator_type : int {
     /// @brief 二元运算符+
     AST_OP_ADD,
 
-    /// @brief 二元运算符*
+    /// @brief 二元运算符-
     AST_OP_SUB, //
 
     // TODO 抽象语法树其它内部节点运算符追加
+    AST_OP_MUL, //二元运算符乘法
+    AST_OP_DIV, //二元运算符除法
+    AST_OP_MOD, //二元运算符取模
+    AST_OP_NEG, //二元运算符取负
 
     /// @brief 最大标识符，表示非法运算符
     AST_OP_MAX,

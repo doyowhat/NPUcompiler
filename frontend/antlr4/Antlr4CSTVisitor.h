@@ -98,13 +98,17 @@ protected:
     ///
     std::any visitAddExp(MiniCParser::AddExpContext * ctx) override;
 
+    ///	@brief 非终结符MulExp的分析
+    /// @param ctx CST上下文
+    /// @return std::any AST的节点
+    std::any visitMulExp(MiniCParser::MulExpContext * ctx) override;
     ///
     /// @brief 非终结符addOp的分析
     /// @param ctx CST上下文
     /// @return std::any 类型
     ///
     std::any visitAddOp(MiniCParser::AddOpContext * ctx) override;
-
+    std::any visitMulOp(MiniCParser::MulOpContext * ctx) override;
     ///
     /// @brief 非终结符unaryExp的分析
     /// @param ctx CST上下文

@@ -49,6 +49,10 @@ InstSelectorArm32::InstSelectorArm32(vector<Instruction *> & _irCode,
 
     translator_handlers[IRInstOperator::IRINST_OP_ADD_I] = &InstSelectorArm32::translate_add_int32;
     translator_handlers[IRInstOperator::IRINST_OP_SUB_I] = &InstSelectorArm32::translate_sub_int32;
+    translator_handlers[IRInstOperator::IRINST_OP_MUL_I] = &InstSelectorArm32::translate_mul_int32;
+    translator_handlers[IRInstOperator::IRINST_OP_DIV_I] = &InstSelectorArm32::translate_div_int32;
+    translator_handlers[IRInstOperator::IRINST_OP_MOD_I] = &InstSelectorArm32::translate_mod_int32;
+    translator_handlers[IRInstOperator::IRINST_OP_NEG_I] = &InstSelectorArm32::translate_neg_int32;
 
     translator_handlers[IRInstOperator::IRINST_OP_FUNC_CALL] = &InstSelectorArm32::translate_call;
     translator_handlers[IRInstOperator::IRINST_OP_ARG] = &InstSelectorArm32::translate_arg;
@@ -78,7 +82,6 @@ void InstSelectorArm32::translate(Instruction * inst)
 {
     // 操作符
     IRInstOperator op = inst->getOp();
-
     map<IRInstOperator, translate_handler>::const_iterator pIter;
     pIter = translator_handlers.find(op);
     if (pIter == translator_handlers.end()) {
@@ -303,6 +306,129 @@ void InstSelectorArm32::translate_sub_int32(Instruction * inst)
     translate_two_operator(inst, "sub");
 }
 
+/// @brief 整数乘法指令翻译成ARM32汇编
+/// @param inst IR指令
+void InstSelectorArm32::translate_mul_int32(Instruction * inst)
+{
+    translate_two_operator(inst, "mul");
+}
+
+/// @brief 整数除法指令翻译成ARM32汇编
+/// @param inst IR指令
+void InstSelectorArm32::translate_div_int32(Instruction * inst)
+{
+    translate_two_operator(inst, "sdiv");
+}
+
+/// @brief 整数求余指令翻译成ARM32汇编
+/// @param inst IR指令
+/// @details ARM32没有直接的求余指令，因此需要使用除法和乘法来实现
+void InstSelectorArm32::translate_mod_int32(Instruction * inst)
+{
+    Value * result = inst;
+    Value * arg1 = inst->getOperand(0);
+    Value * arg2 = inst->getOperand(1);
+
+    int32_t arg1_reg_no = arg1->getRegId();
+    int32_t arg2_reg_no = arg2->getRegId();
+    int32_t result_reg_no = inst->getRegId();
+    int32_t load_result_reg_no, load_arg1_reg_no, load_arg2_reg_no;
+
+    // 看arg1是否是寄存器，若是则寄存器寻址，否则要load变量到寄存器中
+    if (arg1_reg_no == -1) {
+        load_arg1_reg_no = simpleRegisterAllocator.Allocate(arg1);
+        iloc.load_var(load_arg1_reg_no, arg1);
+    } else {
+        load_arg1_reg_no = arg1_reg_no;
+    }
+    if (arg2_reg_no == -1) {
+        load_arg2_reg_no = simpleRegisterAllocator.Allocate(arg2);
+        iloc.load_var(load_arg2_reg_no, arg2);
+    } else {
+        load_arg2_reg_no = arg2_reg_no;
+    }
+
+    // 看结果变量是否是寄存器，若不是则需要分配一个新的寄存器来保存运算的结果
+    if (result_reg_no == -1) {
+        load_result_reg_no = simpleRegisterAllocator.Allocate(result);
+    } else {
+        load_result_reg_no = result_reg_no;
+    }
+
+    // r8 / r9 -> r10
+    iloc.inst("sdiv",
+              PlatformArm32::regName[load_result_reg_no],
+              PlatformArm32::regName[load_arg1_reg_no],
+              PlatformArm32::regName[load_arg2_reg_no]);
+
+    // r10 * r9 -> r11
+    int32_t tempRegNo = simpleRegisterAllocator.Allocate();
+    iloc.inst("mul",
+              PlatformArm32::regName[tempRegNo],
+              PlatformArm32::regName[load_result_reg_no],
+              PlatformArm32::regName[load_arg2_reg_no]);
+
+    // r8 - r11 -> r12
+    int32_t tempRegNo2 = simpleRegisterAllocator.Allocate();
+    iloc.inst("sub",
+              PlatformArm32::regName[tempRegNo2],
+              PlatformArm32::regName[load_arg1_reg_no],
+              PlatformArm32::regName[tempRegNo]);
+
+    // 结果不是寄存器，则需要把rs_reg_name保存到结果变量中
+    if (result_reg_no == -1) {
+        iloc.store_var(tempRegNo2, result, ARM32_TMP_REG_NO);
+    }
+
+    // 释放寄存器
+    simpleRegisterAllocator.free(arg1);
+    simpleRegisterAllocator.free(arg2);
+    simpleRegisterAllocator.free(result);
+}
+
+/// @brief 整数取负指令翻译成ARM32汇编
+/// @param inst IR指令
+void InstSelectorArm32::translate_neg_int32(Instruction * inst)
+{
+    Value * result = inst;              // 结果操作数（可能为寄存器或内存）
+    Value * arg1 = inst->getOperand(0); // 源操作数
+
+    int32_t arg1_reg_no = arg1->getRegId();
+    int32_t result_reg_no = inst->getRegId();
+    int32_t load_arg1_reg_no, load_result_reg_no;
+
+    // 处理源操作数寄存器分配
+    if (arg1_reg_no == -1) {
+        // 分配临时寄存器并加载内存值
+        load_arg1_reg_no = simpleRegisterAllocator.Allocate(arg1);
+        iloc.load_var(load_arg1_reg_no, arg1);
+    } else {
+        load_arg1_reg_no = arg1_reg_no;
+    }
+
+    // 处理结果寄存器分配
+    if (result_reg_no == -1) {
+        load_result_reg_no = simpleRegisterAllocator.Allocate(result);
+    } else {
+        load_result_reg_no = result_reg_no;
+    }
+
+    // 生成RSB指令：Rd = 0 - Rn
+    iloc.inst("rsb",
+              PlatformArm32::regName[load_result_reg_no], // 目标寄存器
+              PlatformArm32::regName[load_arg1_reg_no],   // 源寄存器
+              "#0");                                      // 立即数0
+
+    // 结果存储处理
+    if (result_reg_no == -1) {
+        // 将结果寄存器内容写回内存
+        iloc.store_var(load_result_reg_no, result, ARM32_TMP_REG_NO);
+    }
+
+    // 资源释放
+    simpleRegisterAllocator.free(arg1);
+    simpleRegisterAllocator.free(result);
+}
 /// @brief 函数调用指令翻译成ARM32汇编
 /// @param inst IR指令
 void InstSelectorArm32::translate_call(Instruction * inst)

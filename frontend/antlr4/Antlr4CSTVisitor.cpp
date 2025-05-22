@@ -251,32 +251,31 @@ std::any MiniCCSTVisitor::visitStatement(MiniCParser::StatementContext * ctx)
         // if语句（无else）
         auto condNode = std::any_cast<ast_node *>(visitExpr(ifCtx->expr()));
         auto thenStmt = std::any_cast<ast_node *>(visitStatement(ifCtx->statement()));
-
-        // 创建if节点（无else分支）
+        // std::cerr << "if created!" << std::endl;
+        //  创建if节点（无else分支）
         return ast_node::New(ast_operator_type::AST_OP_IF, condNode, thenStmt, nullptr);
     } else if (auto ifElseCtx = dynamic_cast<MiniCParser::IfElseStatementContext *>(ctx)) {
         // if-else语句
         auto condNode = std::any_cast<ast_node *>(visitExpr(ifElseCtx->expr()));
         auto thenStmt = std::any_cast<ast_node *>(visitStatement(ifElseCtx->statement(0)));
         auto elseStmt = std::any_cast<ast_node *>(visitStatement(ifElseCtx->statement(1)));
-
-        // 创建if-else节点
-        return ast_node::New(ast_operator_type::AST_OP_IF_ELSE, condNode, thenStmt, elseStmt);
+        // std::cerr << "if-else created!" << std::endl;
+        //  创建if-else节点
+        return ast_node::New(ast_operator_type::AST_OP_IF_ELSE, condNode, thenStmt, elseStmt, nullptr);
     } else if (auto whileCtx = dynamic_cast<MiniCParser::WhileStatementContext *>(ctx)) {
         // while语句
         auto condNode = std::any_cast<ast_node *>(visitExpr(whileCtx->expr()));
         auto bodyStmt = std::any_cast<ast_node *>(visitStatement(whileCtx->statement()));
-
         // 创建while节点
         return ast_node::New(ast_operator_type::AST_OP_WHILE, condNode, bodyStmt, nullptr);
     } else if (auto breakCtx = dynamic_cast<MiniCParser::BreakStatementContext *>(ctx)) {
         // break语句
-        return ast_node::New(ast_operator_type::AST_OP_BREAK, nullptr, nullptr, nullptr);
+        return ast_node::New(ast_operator_type::AST_OP_BREAK, nullptr);
     } else if (auto continueCtx = dynamic_cast<MiniCParser::ContinueStatementContext *>(ctx)) {
         // continue语句
-        return ast_node::New(ast_operator_type::AST_OP_CONTINUE, nullptr, nullptr, nullptr);
+        return ast_node::New(ast_operator_type::AST_OP_CONTINUE, nullptr);
     }
-
+    std::cerr << "Unknown statement type!" << std::endl;
     return nullptr;
 }
 
@@ -383,14 +382,20 @@ std::any MiniCCSTVisitor::visitMulExp(MiniCParser::MulExpContext * ctx)
 std::any MiniCCSTVisitor::visitLogicalOrOp(MiniCParser::LogicalOrOpContext * ctx)
 {
     // 识别的文法产生式：logicalOrOp : T_OR
-    return ast_operator_type::AST_OP_OR;
+    if (ctx->T_OR()) {
+        return ast_operator_type::AST_OP_OR;
+    } else
+        return nullptr;
 }
 
 /// @brief 非终结运算符LogicalAndOp的遍历
 std::any MiniCCSTVisitor::visitLogicalAndOp(MiniCParser::LogicalAndOpContext * ctx)
 {
     // 识别的文法产生式：logicalAndOp : T_AND
-    return ast_operator_type::AST_OP_AND;
+    if (ctx->T_AND()) {
+        return ast_operator_type::AST_OP_AND;
+    } else
+        return nullptr;
 }
 /// @brief 非终结运算符EqualityOp的遍历
 std::any MiniCCSTVisitor::visitEqualityOp(MiniCParser::EqualityOpContext * ctx)
@@ -401,6 +406,7 @@ std::any MiniCCSTVisitor::visitEqualityOp(MiniCParser::EqualityOpContext * ctx)
     } else {
         return ast_operator_type::AST_OP_NE;
     }
+    return nullptr;
 }
 
 /// @brief 非终结运算符RelOp的遍历
@@ -416,6 +422,7 @@ std::any MiniCCSTVisitor::visitRelOp(MiniCParser::RelOpContext * ctx)
     } else {
         return ast_operator_type::AST_OP_GE;
     }
+    return nullptr;
 }
 
 /// @brief 非终结运算符addOp的遍历

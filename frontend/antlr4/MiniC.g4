@@ -34,23 +34,22 @@ basicType: T_INT;
 // 变量定义
 varDef: T_ID;
 
-// 语句定义
 statement:
-	T_RETURN expr T_SEMICOLON
-	| lVal T_ASSIGN expr T_SEMICOLON
-	| block
-	| expr? T_SEMICOLON
-	| T_IF T_L_PAREN expr T_R_PAREN statement
-	| T_IF T_L_PAREN expr T_R_PAREN statement T_ELSE statement
-	| T_WHILE T_L_PAREN expr T_R_PAREN statement
-	| T_BREAK T_SEMICOLON
-	| T_CONTINUE T_SEMICOLON;
+	T_RETURN expr T_SEMICOLON									# returnStatement
+	| lVal T_ASSIGN expr T_SEMICOLON							# assignStatement
+	| block														# blockStatement
+	| expr? T_SEMICOLON											# expressionStatement
+	| T_IF T_L_PAREN expr T_R_PAREN statement					# ifStatement
+	| T_IF T_L_PAREN expr T_R_PAREN statement T_ELSE statement	# ifElseStatement
+	| T_WHILE T_L_PAREN expr T_R_PAREN statement				# whileStatement
+	| T_BREAK T_SEMICOLON										# breakStatement
+	| T_CONTINUE T_SEMICOLON									# continueStatement;
 
 // 表达式层次结构（按优先级从低到高排列）
 expr: logicalOrExp;
 
 logicalOrExp: logicalAndExp (logicalOrOp logicalAndExp)*;
-logicalAndExp: equalityExp (logicalAndExp equalityExp)*;
+logicalAndExp: equalityExp (logicalAndOp equalityExp)*;
 equalityExp: relExp (equalityOp relExp)*;
 relExp: addExp (relOp addExp)*;
 addExp: mulExp (addOp mulExp)*;

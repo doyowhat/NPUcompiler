@@ -1,5 +1,5 @@
 
-// Generated from /home/code/exp/exp04-minic-expr/frontend/antlr4/MiniC.g4 by ANTLR 4.12.0
+// Generated from MiniC.g4 by ANTLR 4.12.0
 
 
 #include "MiniCVisitor.h"
@@ -114,7 +114,7 @@ void minicParserInitialize() {
   	131,1,0,0,0,135,133,1,0,0,0,136,17,1,0,0,0,137,138,3,20,10,0,138,19,1,
   	0,0,0,139,145,3,22,11,0,140,141,3,32,16,0,141,142,3,22,11,0,142,144,1,
   	0,0,0,143,140,1,0,0,0,144,147,1,0,0,0,145,143,1,0,0,0,145,146,1,0,0,0,
-  	146,21,1,0,0,0,147,145,1,0,0,0,148,154,3,24,12,0,149,150,3,22,11,0,150,
+  	146,21,1,0,0,0,147,145,1,0,0,0,148,154,3,24,12,0,149,150,3,34,17,0,150,
   	151,3,24,12,0,151,153,1,0,0,0,152,149,1,0,0,0,153,156,1,0,0,0,154,152,
   	1,0,0,0,154,155,1,0,0,0,155,23,1,0,0,0,156,154,1,0,0,0,157,163,3,26,13,
   	0,158,159,3,36,18,0,159,160,3,26,13,0,160,162,1,0,0,0,161,158,1,0,0,0,
@@ -761,79 +761,238 @@ MiniCParser::StatementContext::StatementContext(ParserRuleContext *parent, size_
   : ParserRuleContext(parent, invokingState) {
 }
 
-tree::TerminalNode* MiniCParser::StatementContext::T_RETURN() {
-  return getToken(MiniCParser::T_RETURN, 0);
-}
-
-MiniCParser::ExprContext* MiniCParser::StatementContext::expr() {
-  return getRuleContext<MiniCParser::ExprContext>(0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_SEMICOLON() {
-  return getToken(MiniCParser::T_SEMICOLON, 0);
-}
-
-MiniCParser::LValContext* MiniCParser::StatementContext::lVal() {
-  return getRuleContext<MiniCParser::LValContext>(0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_ASSIGN() {
-  return getToken(MiniCParser::T_ASSIGN, 0);
-}
-
-MiniCParser::BlockContext* MiniCParser::StatementContext::block() {
-  return getRuleContext<MiniCParser::BlockContext>(0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_IF() {
-  return getToken(MiniCParser::T_IF, 0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_L_PAREN() {
-  return getToken(MiniCParser::T_L_PAREN, 0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_R_PAREN() {
-  return getToken(MiniCParser::T_R_PAREN, 0);
-}
-
-std::vector<MiniCParser::StatementContext *> MiniCParser::StatementContext::statement() {
-  return getRuleContexts<MiniCParser::StatementContext>();
-}
-
-MiniCParser::StatementContext* MiniCParser::StatementContext::statement(size_t i) {
-  return getRuleContext<MiniCParser::StatementContext>(i);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_ELSE() {
-  return getToken(MiniCParser::T_ELSE, 0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_WHILE() {
-  return getToken(MiniCParser::T_WHILE, 0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_BREAK() {
-  return getToken(MiniCParser::T_BREAK, 0);
-}
-
-tree::TerminalNode* MiniCParser::StatementContext::T_CONTINUE() {
-  return getToken(MiniCParser::T_CONTINUE, 0);
-}
-
 
 size_t MiniCParser::StatementContext::getRuleIndex() const {
   return MiniCParser::RuleStatement;
 }
 
+void MiniCParser::StatementContext::copyFrom(StatementContext *ctx) {
+  ParserRuleContext::copyFrom(ctx);
+}
 
-std::any MiniCParser::StatementContext::accept(tree::ParseTreeVisitor *visitor) {
+//----------------- WhileStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::WhileStatementContext::T_WHILE() {
+  return getToken(MiniCParser::T_WHILE, 0);
+}
+
+tree::TerminalNode* MiniCParser::WhileStatementContext::T_L_PAREN() {
+  return getToken(MiniCParser::T_L_PAREN, 0);
+}
+
+MiniCParser::ExprContext* MiniCParser::WhileStatementContext::expr() {
+  return getRuleContext<MiniCParser::ExprContext>(0);
+}
+
+tree::TerminalNode* MiniCParser::WhileStatementContext::T_R_PAREN() {
+  return getToken(MiniCParser::T_R_PAREN, 0);
+}
+
+MiniCParser::StatementContext* MiniCParser::WhileStatementContext::statement() {
+  return getRuleContext<MiniCParser::StatementContext>(0);
+}
+
+MiniCParser::WhileStatementContext::WhileStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::WhileStatementContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
-    return parserVisitor->visitStatement(this);
+    return parserVisitor->visitWhileStatement(this);
   else
     return visitor->visitChildren(this);
 }
+//----------------- BlockStatementContext ------------------------------------------------------------------
 
+MiniCParser::BlockContext* MiniCParser::BlockStatementContext::block() {
+  return getRuleContext<MiniCParser::BlockContext>(0);
+}
+
+MiniCParser::BlockStatementContext::BlockStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::BlockStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitBlockStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- IfElseStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::IfElseStatementContext::T_IF() {
+  return getToken(MiniCParser::T_IF, 0);
+}
+
+tree::TerminalNode* MiniCParser::IfElseStatementContext::T_L_PAREN() {
+  return getToken(MiniCParser::T_L_PAREN, 0);
+}
+
+MiniCParser::ExprContext* MiniCParser::IfElseStatementContext::expr() {
+  return getRuleContext<MiniCParser::ExprContext>(0);
+}
+
+tree::TerminalNode* MiniCParser::IfElseStatementContext::T_R_PAREN() {
+  return getToken(MiniCParser::T_R_PAREN, 0);
+}
+
+std::vector<MiniCParser::StatementContext *> MiniCParser::IfElseStatementContext::statement() {
+  return getRuleContexts<MiniCParser::StatementContext>();
+}
+
+MiniCParser::StatementContext* MiniCParser::IfElseStatementContext::statement(size_t i) {
+  return getRuleContext<MiniCParser::StatementContext>(i);
+}
+
+tree::TerminalNode* MiniCParser::IfElseStatementContext::T_ELSE() {
+  return getToken(MiniCParser::T_ELSE, 0);
+}
+
+MiniCParser::IfElseStatementContext::IfElseStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::IfElseStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitIfElseStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- AssignStatementContext ------------------------------------------------------------------
+
+MiniCParser::LValContext* MiniCParser::AssignStatementContext::lVal() {
+  return getRuleContext<MiniCParser::LValContext>(0);
+}
+
+tree::TerminalNode* MiniCParser::AssignStatementContext::T_ASSIGN() {
+  return getToken(MiniCParser::T_ASSIGN, 0);
+}
+
+MiniCParser::ExprContext* MiniCParser::AssignStatementContext::expr() {
+  return getRuleContext<MiniCParser::ExprContext>(0);
+}
+
+tree::TerminalNode* MiniCParser::AssignStatementContext::T_SEMICOLON() {
+  return getToken(MiniCParser::T_SEMICOLON, 0);
+}
+
+MiniCParser::AssignStatementContext::AssignStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::AssignStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitAssignStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- BreakStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::BreakStatementContext::T_BREAK() {
+  return getToken(MiniCParser::T_BREAK, 0);
+}
+
+tree::TerminalNode* MiniCParser::BreakStatementContext::T_SEMICOLON() {
+  return getToken(MiniCParser::T_SEMICOLON, 0);
+}
+
+MiniCParser::BreakStatementContext::BreakStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::BreakStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitBreakStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ExpressionStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::ExpressionStatementContext::T_SEMICOLON() {
+  return getToken(MiniCParser::T_SEMICOLON, 0);
+}
+
+MiniCParser::ExprContext* MiniCParser::ExpressionStatementContext::expr() {
+  return getRuleContext<MiniCParser::ExprContext>(0);
+}
+
+MiniCParser::ExpressionStatementContext::ExpressionStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::ExpressionStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitExpressionStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ContinueStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::ContinueStatementContext::T_CONTINUE() {
+  return getToken(MiniCParser::T_CONTINUE, 0);
+}
+
+tree::TerminalNode* MiniCParser::ContinueStatementContext::T_SEMICOLON() {
+  return getToken(MiniCParser::T_SEMICOLON, 0);
+}
+
+MiniCParser::ContinueStatementContext::ContinueStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::ContinueStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitContinueStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- ReturnStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::ReturnStatementContext::T_RETURN() {
+  return getToken(MiniCParser::T_RETURN, 0);
+}
+
+MiniCParser::ExprContext* MiniCParser::ReturnStatementContext::expr() {
+  return getRuleContext<MiniCParser::ExprContext>(0);
+}
+
+tree::TerminalNode* MiniCParser::ReturnStatementContext::T_SEMICOLON() {
+  return getToken(MiniCParser::T_SEMICOLON, 0);
+}
+
+MiniCParser::ReturnStatementContext::ReturnStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::ReturnStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitReturnStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
+//----------------- IfStatementContext ------------------------------------------------------------------
+
+tree::TerminalNode* MiniCParser::IfStatementContext::T_IF() {
+  return getToken(MiniCParser::T_IF, 0);
+}
+
+tree::TerminalNode* MiniCParser::IfStatementContext::T_L_PAREN() {
+  return getToken(MiniCParser::T_L_PAREN, 0);
+}
+
+MiniCParser::ExprContext* MiniCParser::IfStatementContext::expr() {
+  return getRuleContext<MiniCParser::ExprContext>(0);
+}
+
+tree::TerminalNode* MiniCParser::IfStatementContext::T_R_PAREN() {
+  return getToken(MiniCParser::T_R_PAREN, 0);
+}
+
+MiniCParser::StatementContext* MiniCParser::IfStatementContext::statement() {
+  return getRuleContext<MiniCParser::StatementContext>(0);
+}
+
+MiniCParser::IfStatementContext::IfStatementContext(StatementContext *ctx) { copyFrom(ctx); }
+
+
+std::any MiniCParser::IfStatementContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<MiniCVisitor*>(visitor))
+    return parserVisitor->visitIfStatement(this);
+  else
+    return visitor->visitChildren(this);
+}
 MiniCParser::StatementContext* MiniCParser::statement() {
   StatementContext *_localctx = _tracker.createInstance<StatementContext>(_ctx, getState());
   enterRule(_localctx, 16, MiniCParser::RuleStatement);
@@ -851,6 +1010,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     _errHandler->sync(this);
     switch (getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 7, _ctx)) {
     case 1: {
+      _localctx = _tracker.createInstance<MiniCParser::ReturnStatementContext>(_localctx);
       enterOuterAlt(_localctx, 1);
       setState(97);
       match(MiniCParser::T_RETURN);
@@ -862,6 +1022,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 2: {
+      _localctx = _tracker.createInstance<MiniCParser::AssignStatementContext>(_localctx);
       enterOuterAlt(_localctx, 2);
       setState(101);
       lVal();
@@ -875,6 +1036,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 3: {
+      _localctx = _tracker.createInstance<MiniCParser::BlockStatementContext>(_localctx);
       enterOuterAlt(_localctx, 3);
       setState(106);
       block();
@@ -882,6 +1044,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 4: {
+      _localctx = _tracker.createInstance<MiniCParser::ExpressionStatementContext>(_localctx);
       enterOuterAlt(_localctx, 4);
       setState(108);
       _errHandler->sync(this);
@@ -898,6 +1061,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 5: {
+      _localctx = _tracker.createInstance<MiniCParser::IfStatementContext>(_localctx);
       enterOuterAlt(_localctx, 5);
       setState(111);
       match(MiniCParser::T_IF);
@@ -913,6 +1077,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 6: {
+      _localctx = _tracker.createInstance<MiniCParser::IfElseStatementContext>(_localctx);
       enterOuterAlt(_localctx, 6);
       setState(117);
       match(MiniCParser::T_IF);
@@ -932,6 +1097,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 7: {
+      _localctx = _tracker.createInstance<MiniCParser::WhileStatementContext>(_localctx);
       enterOuterAlt(_localctx, 7);
       setState(125);
       match(MiniCParser::T_WHILE);
@@ -947,6 +1113,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 8: {
+      _localctx = _tracker.createInstance<MiniCParser::BreakStatementContext>(_localctx);
       enterOuterAlt(_localctx, 8);
       setState(131);
       match(MiniCParser::T_BREAK);
@@ -956,6 +1123,7 @@ MiniCParser::StatementContext* MiniCParser::statement() {
     }
 
     case 9: {
+      _localctx = _tracker.createInstance<MiniCParser::ContinueStatementContext>(_localctx);
       enterOuterAlt(_localctx, 9);
       setState(133);
       match(MiniCParser::T_CONTINUE);
@@ -1115,12 +1283,12 @@ MiniCParser::EqualityExpContext* MiniCParser::LogicalAndExpContext::equalityExp(
   return getRuleContext<MiniCParser::EqualityExpContext>(i);
 }
 
-std::vector<MiniCParser::LogicalAndExpContext *> MiniCParser::LogicalAndExpContext::logicalAndExp() {
-  return getRuleContexts<MiniCParser::LogicalAndExpContext>();
+std::vector<MiniCParser::LogicalAndOpContext *> MiniCParser::LogicalAndExpContext::logicalAndOp() {
+  return getRuleContexts<MiniCParser::LogicalAndOpContext>();
 }
 
-MiniCParser::LogicalAndExpContext* MiniCParser::LogicalAndExpContext::logicalAndExp(size_t i) {
-  return getRuleContext<MiniCParser::LogicalAndExpContext>(i);
+MiniCParser::LogicalAndOpContext* MiniCParser::LogicalAndExpContext::logicalAndOp(size_t i) {
+  return getRuleContext<MiniCParser::LogicalAndOpContext>(i);
 }
 
 
@@ -1139,6 +1307,7 @@ std::any MiniCParser::LogicalAndExpContext::accept(tree::ParseTreeVisitor *visit
 MiniCParser::LogicalAndExpContext* MiniCParser::logicalAndExp() {
   LogicalAndExpContext *_localctx = _tracker.createInstance<LogicalAndExpContext>(_ctx, getState());
   enterRule(_localctx, 22, MiniCParser::RuleLogicalAndExp);
+  size_t _la = 0;
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1148,23 +1317,20 @@ MiniCParser::LogicalAndExpContext* MiniCParser::logicalAndExp() {
     exitRule();
   });
   try {
-    size_t alt;
     enterOuterAlt(_localctx, 1);
     setState(148);
     equalityExp();
     setState(154);
     _errHandler->sync(this);
-    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx);
-    while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
-      if (alt == 1) {
-        setState(149);
-        logicalAndExp();
-        setState(150);
-        equalityExp(); 
-      }
+    _la = _input->LA(1);
+    while (_la == MiniCParser::T_AND) {
+      setState(149);
+      logicalAndOp();
+      setState(150);
+      equalityExp();
       setState(156);
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 9, _ctx);
+      _la = _input->LA(1);
     }
    
   }
@@ -1366,6 +1532,7 @@ std::any MiniCParser::AddExpContext::accept(tree::ParseTreeVisitor *visitor) {
 MiniCParser::AddExpContext* MiniCParser::addExp() {
   AddExpContext *_localctx = _tracker.createInstance<AddExpContext>(_ctx, getState());
   enterRule(_localctx, 28, MiniCParser::RuleAddExp);
+  size_t _la = 0;
 
 #if __cplusplus > 201703L
   auto onExit = finally([=, this] {
@@ -1375,23 +1542,22 @@ MiniCParser::AddExpContext* MiniCParser::addExp() {
     exitRule();
   });
   try {
-    size_t alt;
     enterOuterAlt(_localctx, 1);
     setState(175);
     mulExp();
     setState(181);
     _errHandler->sync(this);
-    alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 12, _ctx);
-    while (alt != 2 && alt != atn::ATN::INVALID_ALT_NUMBER) {
-      if (alt == 1) {
-        setState(176);
-        addOp();
-        setState(177);
-        mulExp(); 
-      }
+    _la = _input->LA(1);
+    while (_la == MiniCParser::T_ADD
+
+    || _la == MiniCParser::T_SUB) {
+      setState(176);
+      addOp();
+      setState(177);
+      mulExp();
       setState(183);
       _errHandler->sync(this);
-      alt = getInterpreter<atn::ParserATNSimulator>()->adaptivePredict(_input, 12, _ctx);
+      _la = _input->LA(1);
     }
    
   }

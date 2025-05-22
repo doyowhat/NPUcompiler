@@ -188,6 +188,48 @@ std::any MiniCCSTVisitor::visitReturnStatement(MiniCParser::ReturnStatementConte
     // 创建返回节点，其孩子为Expr
     return create_contain_node(ast_operator_type::AST_OP_RETURN, exprNode);
 }
+
+std::any MiniCCSTVisitor::visitIfStatement(MiniCParser::IfStatementContext * ctx)
+{
+    // 识别的文法产生式：ifStatement: T_IF T_L_PAREN expr T_R_PAREN statement;
+
+    // 条件表达式
+    auto condNode = std::any_cast<ast_node *>(visitExpr(ctx->expr()));
+    // then 子句
+    auto thenStmt = std::any_cast<ast_node *>(visitStatement(ctx->statement()));
+    return ast_node::New(ast_operator_type::AST_OP_IF, condNode, thenStmt, nullptr);
+}
+/// @brief 非终结运算符statement中的IfElseStatement的遍历
+std::any MiniCCSTVisitor::visitIfElseStatement(MiniCParser::IfElseStatementContext * ctx)
+{
+    // 条件表达式
+    auto condNode = std::any_cast<ast_node *>(visitExpr(ctx->expr()));
+    // then 子句
+    auto thenStmt = std::any_cast<ast_node *>(visitStatement(ctx->statement(0)));
+    // else 子句
+    auto elseStmt = std::any_cast<ast_node *>(visitStatement(ctx->statement(1)));
+    return ast_node::New(ast_operator_type::AST_OP_IF_ELSE, condNode, thenStmt, elseStmt);
+}
+
+std::any MiniCCSTVisitor::visitBreakStatement(MiniCParser::BreakStatementContext * ctx)
+{
+    return ast_node::New(ast_operator_type::AST_OP_BREAK, nullptr);
+}
+
+std::any MiniCCSTVisitor::visitContinueStatement(MiniCParser::ContinueStatementContext * ctx)
+{
+    return ast_node::New(ast_operator_type::AST_OP_CONTINUE, nullptr);
+}
+
+/// @brief 非终结运算符statement中的WhileStatement的遍历
+std::any MiniCCSTVisitor::visitWhileStatement(MiniCParser::WhileStatementContext * ctx)
+{
+    // 循环条件
+    auto condNode = std::any_cast<ast_node *>(visitExpr(ctx->expr()));
+    // 循环体
+    auto bodyStmt = std::any_cast<ast_node *>(visitStatement(ctx->statement()));
+    return ast_node::New(ast_operator_type::AST_OP_WHILE, condNode, bodyStmt, nullptr);
+}
 /// @brief 非终结运算符statement中的遍历
 /// @param ctx CST上下文
 std::any MiniCCSTVisitor::visitStatement(MiniCParser::StatementContext * ctx)
@@ -205,14 +247,34 @@ std::any MiniCCSTVisitor::visitStatement(MiniCParser::StatementContext * ctx)
         return visitBlockStatement(blockCtx);
     } else if (Instanceof(exprCtx, MiniCParser::ExpressionStatementContext *, ctx)) {
         return visitExpressionStatement(exprCtx);
-    } else if (Instanceof(ifCtx, MiniCParser::IfStatementContext *, ctx)) {
-        return visitIfStatement(ifCtx);
-    } else if (Instanceof(whileCtx, MiniCParser::WhileStatementContext *, ctx)) {
-        return visitWhileStatement(whileCtx);
-    } else if (Instanceof(breakCtx, MiniCParser::BreakStatementContext *, ctx)) {
-        return visitBreakStatement(breakCtx);
-    } else if (Instanceof(continueCtx, MiniCParser::ContinueStatementContext *, ctx)) {
-        return visitContinueStatement(continueCtx);
+    } else if (auto ifCtx = dynamic_cast<MiniCParser::IfStatementContext *>(ctx)) {
+        // if语句（无else）
+        auto condNode = std::any_cast<ast_node *>(visitExpr(ifCtx->expr()));
+        auto thenStmt = std::any_cast<ast_node *>(visitStatement(ifCtx->statement()));
+
+        // 创建if节点（无else分支）
+        return ast_node::New(ast_operator_type::AST_OP_IF, condNode, thenStmt, nullptr);
+    } else if (auto ifElseCtx = dynamic_cast<MiniCParser::IfElseStatementContext *>(ctx)) {
+        // if-else语句
+        auto condNode = std::any_cast<ast_node *>(visitExpr(ifElseCtx->expr()));
+        auto thenStmt = std::any_cast<ast_node *>(visitStatement(ifElseCtx->statement(0)));
+        auto elseStmt = std::any_cast<ast_node *>(visitStatement(ifElseCtx->statement(1)));
+
+        // 创建if-else节点
+        return ast_node::New(ast_operator_type::AST_OP_IF_ELSE, condNode, thenStmt, elseStmt);
+    } else if (auto whileCtx = dynamic_cast<MiniCParser::WhileStatementContext *>(ctx)) {
+        // while语句
+        auto condNode = std::any_cast<ast_node *>(visitExpr(whileCtx->expr()));
+        auto bodyStmt = std::any_cast<ast_node *>(visitStatement(whileCtx->statement()));
+
+        // 创建while节点
+        return ast_node::New(ast_operator_type::AST_OP_WHILE, condNode, bodyStmt, nullptr);
+    } else if (auto breakCtx = dynamic_cast<MiniCParser::BreakStatementContext *>(ctx)) {
+        // break语句
+        return ast_node::New(ast_operator_type::AST_OP_BREAK, nullptr, nullptr, nullptr);
+    } else if (auto continueCtx = dynamic_cast<MiniCParser::ContinueStatementContext *>(ctx)) {
+        // continue语句
+        return ast_node::New(ast_operator_type::AST_OP_CONTINUE, nullptr, nullptr, nullptr);
     }
 
     return nullptr;
@@ -223,19 +285,20 @@ std::any MiniCCSTVisitor::visitStatement(MiniCParser::StatementContext * ctx)
 std::any MiniCCSTVisitor::visitExpr(MiniCParser::ExprContext * ctx)
 {
     // 识别产生式：expr: addExp;
-    return visitAddExp(ctx->logicalOrExp());
+    return visitLogicalOrExp(ctx->logicalOrExp());
 }
 
 /// @brief 非终结运算符logicalOrExp的遍历
-std::any MiniCCSTVisitor::logicalOrExp(MiniCParser::LogicalOrExpContext * ctx)
+std::any MiniCCSTVisitor::visitLogicalOrExp(MiniCParser::LogicalOrExpContext * ctx)
 {
-    //识别的文法产生式：logicalOrExp: logicalAndExp (logicalOrOp logicalAndExp)*;
-    if (ctx->logcalOrOp().empty())
-        return visitAndExp(ctx->andExp(0));
-    ast_node * left = std::any_cast<ast_node *>(visitAndExp(ctx->AndExp(0)));
-    for (size_t i = 0; i < ctx->logcalOrOp().size(); i++) {
-        auto op = std::any_cast<ast_operator_type>(visitLogcalOrOp(ctx->logcalOrOp(i)));
-        auto right = std::any_cast<ast_node *>(visitAndExp(ctx->andExp(i + 1)));
+    // 逻辑或表达式遍历逻辑
+    if (ctx->logicalOrOp().empty()) {
+        return visitLogicalAndExp(ctx->logicalAndExp(0));
+    }
+    ast_node * left = std::any_cast<ast_node *>(visitLogicalAndExp(ctx->logicalAndExp(0)));
+    for (size_t i = 0; i < ctx->logicalOrOp().size(); i++) {
+        auto op = std::any_cast<ast_operator_type>(visitLogicalOrOp(ctx->logicalOrOp(i)));
+        auto right = std::any_cast<ast_node *>(visitLogicalAndExp(ctx->logicalAndExp(i + 1)));
         left = ast_node::New(op, left, right, nullptr);
     }
     return left;
@@ -341,7 +404,7 @@ std::any MiniCCSTVisitor::visitEqualityOp(MiniCParser::EqualityOpContext * ctx)
 }
 
 /// @brief 非终结运算符RelOp的遍历
-std::any MiniCCSTVisitor::visitRelOp(MiniCparser::RelOpContext * ctx)
+std::any MiniCCSTVisitor::visitRelOp(MiniCParser::RelOpContext * ctx)
 {
     // 识别的文法产生式：relOp : T_LT | T_GT | T_LE | T_GE
     if (ctx->T_LT()) {

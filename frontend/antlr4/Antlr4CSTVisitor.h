@@ -65,12 +65,13 @@ protected:
     /// @brief 非终结运算符statement中的遍历
     /// @param ctx CST上下文
     /// @return AST的节点
-    std::any visitStatement(MiniCParser::StatementContext * ctx);
-
-    /// @brief 非终结运算符statement中的returnStatement的遍历
-    /// @param ctx CST上下文
-    /// @return AST的节点
+    std::any visitIfStatement(MiniCParser::IfStatementContext * ctx) override;
+    std::any visitWhileStatement(MiniCParser::WhileStatementContext * ctx) override;
+    std::any visitBreakStatement(MiniCParser::BreakStatementContext * ctx) override;
+    std::any visitContinueStatement(MiniCParser::ContinueStatementContext * ctx) override;
+    std::any visitIfElseStatement(MiniCParser::IfElseStatementContext * ctx) override;
     std::any visitReturnStatement(MiniCParser::ReturnStatementContext * ctx) override;
+    std::any visitStatement(MiniCParser::StatementContext * ctx);
 
     /// @brief 非终结运算符expr的遍历
     /// @param ctx CST上下文
@@ -91,22 +92,22 @@ protected:
     ///
     std::any visitBlockStatement(MiniCParser::BlockStatementContext * ctx) override;
 
-    ///
-    /// @brief 非终结符AddExp的分析
-    /// @param ctx CST上下文
-    /// @return std::any AST的节点
-    ///
+    std::any visitLogicalOrExp(MiniCParser::LogicalOrExpContext * ctx) override;
+    std::any visitLogicalAndExp(MiniCParser::LogicalAndExpContext * ctx) override;
+    std::any visitEqualityExp(MiniCParser::EqualityExpContext * ctx) override;
+    std::any visitRelExp(MiniCParser::RelExpContext * ctx) override;
     std::any visitAddExp(MiniCParser::AddExpContext * ctx) override;
-
-    ///	@brief 非终结符MulExp的分析
-    /// @param ctx CST上下文
-    /// @return std::any AST的节点
     std::any visitMulExp(MiniCParser::MulExpContext * ctx) override;
     ///
     /// @brief 非终结符addOp的分析
     /// @param ctx CST上下文
     /// @return std::any 类型
     ///
+
+    std::any visitLogicalOrOp(MiniCParser::LogicalOrOpContext * ctx) override;
+    std::any visitLogicalAndOp(MiniCParser::LogicalAndOpContext * ctx) override;
+    std::any visitEqualityOp(MiniCParser::EqualityOpContext * ctx) override;
+    std::any visitRelOp(MiniCParser::RelOpContext * ctx) override;
     std::any visitAddOp(MiniCParser::AddOpContext * ctx) override;
     std::any visitMulOp(MiniCParser::MulOpContext * ctx) override;
     ///

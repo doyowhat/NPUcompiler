@@ -1,5 +1,5 @@
 
-// Generated from /home/code/exp/exp04-minic-expr/frontend/antlr4/MiniC.g4 by ANTLR 4.12.0
+// Generated from MiniC.g4 by ANTLR 4.12.0
 
 #pragma once
 
@@ -199,26 +199,117 @@ public:
   class  StatementContext : public antlr4::ParserRuleContext {
   public:
     StatementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+   
+    StatementContext() = default;
+    void copyFrom(StatementContext *context);
+    using antlr4::ParserRuleContext::copyFrom;
+
     virtual size_t getRuleIndex() const override;
-    antlr4::tree::TerminalNode *T_RETURN();
+
+   
+  };
+
+  class  WhileStatementContext : public StatementContext {
+  public:
+    WhileStatementContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *T_WHILE();
+    antlr4::tree::TerminalNode *T_L_PAREN();
     ExprContext *expr();
-    antlr4::tree::TerminalNode *T_SEMICOLON();
-    LValContext *lVal();
-    antlr4::tree::TerminalNode *T_ASSIGN();
+    antlr4::tree::TerminalNode *T_R_PAREN();
+    StatementContext *statement();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  BlockStatementContext : public StatementContext {
+  public:
+    BlockStatementContext(StatementContext *ctx);
+
     BlockContext *block();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  IfElseStatementContext : public StatementContext {
+  public:
+    IfElseStatementContext(StatementContext *ctx);
+
     antlr4::tree::TerminalNode *T_IF();
     antlr4::tree::TerminalNode *T_L_PAREN();
+    ExprContext *expr();
     antlr4::tree::TerminalNode *T_R_PAREN();
     std::vector<StatementContext *> statement();
     StatementContext* statement(size_t i);
     antlr4::tree::TerminalNode *T_ELSE();
-    antlr4::tree::TerminalNode *T_WHILE();
-    antlr4::tree::TerminalNode *T_BREAK();
-    antlr4::tree::TerminalNode *T_CONTINUE();
-
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-   
+  };
+
+  class  AssignStatementContext : public StatementContext {
+  public:
+    AssignStatementContext(StatementContext *ctx);
+
+    LValContext *lVal();
+    antlr4::tree::TerminalNode *T_ASSIGN();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *T_SEMICOLON();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  BreakStatementContext : public StatementContext {
+  public:
+    BreakStatementContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *T_BREAK();
+    antlr4::tree::TerminalNode *T_SEMICOLON();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ExpressionStatementContext : public StatementContext {
+  public:
+    ExpressionStatementContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *T_SEMICOLON();
+    ExprContext *expr();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ContinueStatementContext : public StatementContext {
+  public:
+    ContinueStatementContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *T_CONTINUE();
+    antlr4::tree::TerminalNode *T_SEMICOLON();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ReturnStatementContext : public StatementContext {
+  public:
+    ReturnStatementContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *T_RETURN();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *T_SEMICOLON();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  IfStatementContext : public StatementContext {
+  public:
+    IfStatementContext(StatementContext *ctx);
+
+    antlr4::tree::TerminalNode *T_IF();
+    antlr4::tree::TerminalNode *T_L_PAREN();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *T_R_PAREN();
+    StatementContext *statement();
+
+    virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   StatementContext* statement();
@@ -258,8 +349,8 @@ public:
     virtual size_t getRuleIndex() const override;
     std::vector<EqualityExpContext *> equalityExp();
     EqualityExpContext* equalityExp(size_t i);
-    std::vector<LogicalAndExpContext *> logicalAndExp();
-    LogicalAndExpContext* logicalAndExp(size_t i);
+    std::vector<LogicalAndOpContext *> logicalAndOp();
+    LogicalAndOpContext* logicalAndOp(size_t i);
 
 
     virtual std::any accept(antlr4::tree::ParseTreeVisitor *visitor) override;

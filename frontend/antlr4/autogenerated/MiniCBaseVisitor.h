@@ -1,5 +1,5 @@
 
-// Generated from /home/code/exp/exp04-minic-expr/frontend/antlr4/MiniC.g4 by ANTLR 4.12.0
+// Generated from MiniC.g4 by ANTLR 4.12.0
 
 #pragma once
 
@@ -47,7 +47,39 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitStatement(MiniCParser::StatementContext *ctx) override {
+  virtual std::any visitReturnStatement(MiniCParser::ReturnStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitAssignStatement(MiniCParser::AssignStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitBlockStatement(MiniCParser::BlockStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitExpressionStatement(MiniCParser::ExpressionStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitIfStatement(MiniCParser::IfStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitIfElseStatement(MiniCParser::IfElseStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitWhileStatement(MiniCParser::WhileStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitBreakStatement(MiniCParser::BreakStatementContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitContinueStatement(MiniCParser::ContinueStatementContext *ctx) override {
     return visitChildren(ctx);
   }
 

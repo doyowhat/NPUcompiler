@@ -13,19 +13,19 @@ grammar MiniC;
 // 源文件编译单元定义
 compileUnit: (funcDef | varDecl)* EOF;
 
-// 函数定义，目前不支持形参，也不支持返回void类型等
+// 函数定义
 funcDef: T_INT T_ID T_L_PAREN T_R_PAREN block;
 
-// 语句块看用作函数体，这里允许多个语句，并且不含任何语句
+// 语句块
 block: T_L_BRACE blockItemList? T_R_BRACE;
 
-// 每个ItemList可包含至少一个Item
+// 块内元素列表
 blockItemList: blockItem+;
 
-// 每个Item可以是一个语句，或者变量声明语句
+// 块内元素
 blockItem: statement | varDecl;
 
-// 变量声明，目前不支持变量含有初值
+// 变量声明
 varDecl: basicType varDef (T_COMMA varDef)* T_SEMICOLON;
 
 // 基本类型
@@ -34,35 +34,49 @@ basicType: T_INT;
 // 变量定义
 varDef: T_ID;
 
-// 目前语句支持return和赋值语句
+// 语句定义
 statement:
-	T_RETURN expr T_SEMICOLON			# returnStatement
-	| lVal T_ASSIGN expr T_SEMICOLON	# assignStatement
-	| block								# blockStatement
-	| expr? T_SEMICOLON					# expressionStatement;
+	T_RETURN expr T_SEMICOLON
+	| lVal T_ASSIGN expr T_SEMICOLON
+	| block
+	| expr? T_SEMICOLON
+	| T_IF T_L_PAREN expr T_R_PAREN statement
+	| T_IF T_L_PAREN expr T_R_PAREN statement T_ELSE statement
+	| T_WHILE T_L_PAREN expr T_R_PAREN statement
+	| T_BREAK T_SEMICOLON
+	| T_CONTINUE T_SEMICOLON;
 
-// 表达式文法 expr : AddExp 表达式目前只支持加法与减法运算
-expr: addExp;
+// 表达式层次结构（按优先级从低到高排列）
+expr: logicalOrExp;
 
-// 加减表达式
+logicalOrExp: logicalAndExp (logicalOrOp logicalAndExp)*;
+logicalAndExp: equalityExp (logicalAndExp equalityExp)*;
+equalityExp: relExp (equalityOp relExp)*;
+relExp: addExp (relOp addExp)*;
 addExp: mulExp (addOp mulExp)*;
 mulExp: unaryExp (mulOp unaryExp)*;
-mulOp: T_MUL | T_DIV | T_MOD;
-// 加减运算符
+
+// 新增：运算符定义
+logicalOrOp: T_OR;
+logicalAndOp: T_AND;
+equalityOp: T_EQ | T_NE;
+relOp: T_LT | T_GT | T_LE | T_GE;
 addOp: T_ADD | T_SUB;
+mulOp: T_MUL | T_DIV | T_MOD;
 
-// 一元表达式
 unaryExp:
-	primaryExp
-	| T_ID T_L_PAREN realParamList? T_R_PAREN
-	| T_SUB unaryExp;
+	T_NOT unaryExp
+	| T_SUB unaryExp
+	| primaryExp
+	| T_ID T_L_PAREN realParamList? T_R_PAREN;
 
-// 基本表达式：括号表达式、整数、左值表达式
 primaryExp:
 	T_L_PAREN expr T_R_PAREN
 	| T_DIGIT
 	| T_OCTAL
 	| T_HEX
+	| T_TRUE
+	| T_FALSE
 	| lVal;
 
 // 实参列表
@@ -71,8 +85,7 @@ realParamList: expr (T_COMMA expr)*;
 // 左值表达式
 lVal: T_ID;
 
-// 用正规式来进行词法规则的描述
-
+// 词法规则
 T_L_PAREN: '(';
 T_R_PAREN: ')';
 T_SEMICOLON: ';';
@@ -88,7 +101,31 @@ T_MUL: '*';
 T_DIV: '/';
 T_MOD: '%';
 
-// 要注意关键字同样也属于T_ID，因此必须放在T_ID的前面，否则会识别成T_ID
+// 关系运算符
+T_LT: '<';
+T_GT: '>';
+T_LE: '<=';
+T_GE: '>=';
+T_EQ: '==';
+T_NE: '!=';
+
+// 逻辑运算符
+T_AND: '&&';
+T_OR: '||';
+T_NOT: '!';
+
+// 控制流关键字
+T_IF: 'if';
+T_ELSE: 'else';
+T_WHILE: 'while';
+T_BREAK: 'break';
+T_CONTINUE: 'continue';
+
+// 布尔字面量
+T_TRUE: 'true';
+T_FALSE: 'false';
+
+// 关键字（需放在T_ID前）
 T_RETURN: 'return';
 T_INT: 'int';
 T_VOID: 'void';

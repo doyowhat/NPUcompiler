@@ -1,5 +1,5 @@
 
-// Generated from MiniC.g4 by ANTLR 4.12.0
+// Generated from /home/code/exp/exp04-minic-expr/frontend/antlr4/MiniC.g4 by ANTLR 4.12.0
 
 #pragma once
 
@@ -14,8 +14,11 @@ public:
   enum {
     T_L_PAREN = 1, T_R_PAREN = 2, T_SEMICOLON = 3, T_L_BRACE = 4, T_R_BRACE = 5, 
     T_ASSIGN = 6, T_COMMA = 7, T_ADD = 8, T_SUB = 9, T_MUL = 10, T_DIV = 11, 
-    T_MOD = 12, T_RETURN = 13, T_INT = 14, T_VOID = 15, T_ID = 16, T_OCTAL = 17, 
-    T_HEX = 18, T_DIGIT = 19, WS = 20
+    T_MOD = 12, T_LT = 13, T_GT = 14, T_LE = 15, T_GE = 16, T_EQ = 17, T_NE = 18, 
+    T_AND = 19, T_OR = 20, T_NOT = 21, T_IF = 22, T_ELSE = 23, T_WHILE = 24, 
+    T_BREAK = 25, T_CONTINUE = 26, T_TRUE = 27, T_FALSE = 28, T_RETURN = 29, 
+    T_INT = 30, T_VOID = 31, T_ID = 32, T_OCTAL = 33, T_HEX = 34, T_DIGIT = 35, 
+    WS = 36
   };
 
   explicit MiniCLexer(antlr4::CharStream *input);

@@ -1,5 +1,5 @@
 
-// Generated from MiniC.g4 by ANTLR 4.12.0
+// Generated from /home/code/exp/exp04-minic-expr/frontend/antlr4/MiniC.g4 by ANTLR 4.12.0
 
 #pragma once
 
@@ -47,23 +47,27 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitReturnStatement(MiniCParser::ReturnStatementContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitAssignStatement(MiniCParser::AssignStatementContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitBlockStatement(MiniCParser::BlockStatementContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual std::any visitExpressionStatement(MiniCParser::ExpressionStatementContext *ctx) override {
+  virtual std::any visitStatement(MiniCParser::StatementContext *ctx) override {
     return visitChildren(ctx);
   }
 
   virtual std::any visitExpr(MiniCParser::ExprContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitLogicalOrExp(MiniCParser::LogicalOrExpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitLogicalAndExp(MiniCParser::LogicalAndExpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitEqualityExp(MiniCParser::EqualityExpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitRelExp(MiniCParser::RelExpContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -75,11 +79,27 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual std::any visitMulOp(MiniCParser::MulOpContext *ctx) override {
+  virtual std::any visitLogicalOrOp(MiniCParser::LogicalOrOpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitLogicalAndOp(MiniCParser::LogicalAndOpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitEqualityOp(MiniCParser::EqualityOpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitRelOp(MiniCParser::RelOpContext *ctx) override {
     return visitChildren(ctx);
   }
 
   virtual std::any visitAddOp(MiniCParser::AddOpContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual std::any visitMulOp(MiniCParser::MulOpContext *ctx) override {
     return visitChildren(ctx);
   }
 

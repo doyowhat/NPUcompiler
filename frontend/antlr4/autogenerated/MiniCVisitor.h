@@ -1,5 +1,5 @@
 
-// Generated from MiniC.g4 by ANTLR 4.12.0
+// Generated from /home/code/exp/exp04-minic-expr/frontend/antlr4/MiniC.g4 by ANTLR 4.12.0
 
 #pragma once
 
@@ -35,23 +35,33 @@ public:
 
     virtual std::any visitVarDef(MiniCParser::VarDefContext *context) = 0;
 
-    virtual std::any visitReturnStatement(MiniCParser::ReturnStatementContext *context) = 0;
-
-    virtual std::any visitAssignStatement(MiniCParser::AssignStatementContext *context) = 0;
-
-    virtual std::any visitBlockStatement(MiniCParser::BlockStatementContext *context) = 0;
-
-    virtual std::any visitExpressionStatement(MiniCParser::ExpressionStatementContext *context) = 0;
+    virtual std::any visitStatement(MiniCParser::StatementContext *context) = 0;
 
     virtual std::any visitExpr(MiniCParser::ExprContext *context) = 0;
+
+    virtual std::any visitLogicalOrExp(MiniCParser::LogicalOrExpContext *context) = 0;
+
+    virtual std::any visitLogicalAndExp(MiniCParser::LogicalAndExpContext *context) = 0;
+
+    virtual std::any visitEqualityExp(MiniCParser::EqualityExpContext *context) = 0;
+
+    virtual std::any visitRelExp(MiniCParser::RelExpContext *context) = 0;
 
     virtual std::any visitAddExp(MiniCParser::AddExpContext *context) = 0;
 
     virtual std::any visitMulExp(MiniCParser::MulExpContext *context) = 0;
 
-    virtual std::any visitMulOp(MiniCParser::MulOpContext *context) = 0;
+    virtual std::any visitLogicalOrOp(MiniCParser::LogicalOrOpContext *context) = 0;
+
+    virtual std::any visitLogicalAndOp(MiniCParser::LogicalAndOpContext *context) = 0;
+
+    virtual std::any visitEqualityOp(MiniCParser::EqualityOpContext *context) = 0;
+
+    virtual std::any visitRelOp(MiniCParser::RelOpContext *context) = 0;
 
     virtual std::any visitAddOp(MiniCParser::AddOpContext *context) = 0;
+
+    virtual std::any visitMulOp(MiniCParser::MulOpContext *context) = 0;
 
     virtual std::any visitUnaryExp(MiniCParser::UnaryExpContext *context) = 0;
 

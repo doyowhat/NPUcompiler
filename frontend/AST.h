@@ -95,6 +95,24 @@ enum class ast_operator_type : int {
     AST_OP_MOD, //二元运算符取模
     AST_OP_NEG, //二元运算符取负
 
+    /// @brief 逻辑运算符
+    AST_OP_NOT, //一元运算符取反
+    AST_OP_AND, //二元运算符与
+    AST_OP_OR,  //二元运算符或
+
+    /// @brief 关系运算符
+    AST_OP_EQ,
+    AST_OP_NE,
+    AST_OP_LT,
+    AST_OP_LE,
+    AST_OP_GT,
+    AST_OP_GE,
+
+    /// @brief 控制流关键字
+    AST_OP_IF,
+    AST_OP_ELSE,
+    AST_OP_WHILE,
+    AST_OP_FOR,
     /// @brief 最大标识符，表示非法运算符
     AST_OP_MAX,
 };

@@ -419,23 +419,27 @@ bool IRGenerator::ir_if(ast_node * node)
     auto endLabelInst = new LabelInstruction(currentFunc, end_label);
 
     // 生成 BF 指令：如果条件为假，跳转到假分支
-    currentFunc->getInterCode().addInst(
+    node->blockInsts.addInst(condNode->blockInsts);
+    node->blockInsts.addInst(
         new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, condNode->val, falseLabelInst));
 
     // 真分支
-    currentFunc->getInterCode().addInst(trueLabelInst);
-    ir_visit_ast_node(node->sons[1]);                                                    // 真分支语句（a=48）
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabelInst)); // 跳转到结束标签
+    node->blockInsts.addInst(trueLabelInst);
+    ir_visit_ast_node(node->sons[1]);
+    node->blockInsts.addInst(node->sons[1]->blockInsts);
+    // 真分支语句（a=48）
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, endLabelInst)); // 跳转到结束标签
 
     // 假分支
-    currentFunc->getInterCode().addInst(falseLabelInst);
+    node->blockInsts.addInst(falseLabelInst);
     if (node->sons.size() > 2) {
-        ir_visit_ast_node(node->sons[2]); // 假分支语句（a=40）
+        ir_visit_ast_node(node->sons[2]);
+        node->blockInsts.addInst(node->sons[2]->blockInsts);
     }
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabelInst)); // 跳转到结束标签
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, endLabelInst)); // 跳转到结束标签
 
     // 结束标签
-    currentFunc->getInterCode().addInst(endLabelInst);
+    node->blockInsts.addInst(endLabelInst);
     return true;
 }
 
@@ -449,32 +453,32 @@ bool IRGenerator::ir_while(ast_node * node)
     std::string loop_body_label = generateLabel();
     std::string loop_exit_label = generateLabel();
 
-    // TODO 保存循环上下文（确保LoopContext在IRGenerator.h中声明）
     loop_contexts.push({loop_entry_label, loop_body_label, loop_exit_label});
 
     // 循环入口标签
     auto loopEntryLabel = new LabelInstruction(currentFunc, loop_entry_label);
-    currentFunc->getInterCode().addInst(loopEntryLabel);
+    node->blockInsts.addInst(loopEntryLabel);
 
     // 条件表达式
     ast_node * condNode = node->sons[0];
     ir_visit_ast_node(condNode);
-
+    node->blockInsts.addInst(condNode->blockInsts);
     // 生成BT指令：条件为真时跳转到循环体
     auto loopBodyLabel = new LabelInstruction(currentFunc, loop_body_label);
-    currentFunc->getInterCode().addInst(
+    node->blockInsts.addInst(
         new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, condNode->val, loopBodyLabel));
 
     // 循环出口标签（条件为假时直接到达）
     auto loopExitLabel = new LabelInstruction(currentFunc, loop_exit_label);
-    currentFunc->getInterCode().addInst(loopExitLabel);
+    node->blockInsts.addInst(loopExitLabel);
 
     // 循环体入口标签
-    currentFunc->getInterCode().addInst(loopBodyLabel);
+    node->blockInsts.addInst(loopBodyLabel);
     ir_visit_ast_node(node->sons[1]); // 循环体
+    node->blockInsts.addInst(node->sons[1]->blockInsts);
 
     // 无条件跳转到循环条件判断
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, loopEntryLabel));
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, loopEntryLabel));
 
     loop_contexts.pop();
     return true;
@@ -493,7 +497,7 @@ bool IRGenerator::ir_break(ast_node * node)
     auto loopExitLabel = new LabelInstruction(currentFunc, context.loop_exit_label);
 
     // 生成跳转到出口标签的指令
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, loopExitLabel));
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, loopExitLabel));
     return true;
 }
 
@@ -510,7 +514,7 @@ bool IRGenerator::ir_continue(ast_node * node)
     auto loopEntryLabel = new LabelInstruction(currentFunc, context.loop_entry_label);
 
     // 生成跳转到入口标签的指令
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, loopEntryLabel));
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, loopEntryLabel));
     return true;
 }
 
@@ -527,34 +531,33 @@ bool IRGenerator::ir_and(ast_node * node)
     // 左操作数：计算后若为假，跳转到false_label
     ast_node * left = node->sons[0];
     ir_visit_ast_node(left);
+    node->blockInsts.addInst(left->blockInsts);
     auto falseLabel = new LabelInstruction(currentFunc, left_false_label);
-    currentFunc->getInterCode().addInst(
-        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, left->val, falseLabel));
+    node->blockInsts.addInst(new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, left->val, falseLabel));
 
     // 左操作数为真，计算右操作数
     auto trueLabel = new LabelInstruction(currentFunc, left_true_label);
-    currentFunc->getInterCode().addInst(trueLabel);
+    node->blockInsts.addInst(trueLabel);
     auto endLabel = new LabelInstruction(currentFunc, end_label);
     ast_node * right = node->sons[1];
     ir_visit_ast_node(right);
-
+    node->blockInsts.addInst(right->blockInsts);
     // 右操作数若为假，跳转到false_label
-    currentFunc->getInterCode().addInst(
-        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, right->val, falseLabel));
+    node->blockInsts.addInst(new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, right->val, falseLabel));
 
     // 结果为真
-    currentFunc->getInterCode().addInst(trueLabel); // 复用左操作数的trueLabel
+    node->blockInsts.addInst(trueLabel); // 复用左操作数的trueLabel
     LocalVariable * result = static_cast<LocalVariable *>(module->newVarValue(IntegerType::getTypeInt()));
-    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(1)));
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabel));
+    node->blockInsts.addInst(new MoveInstruction(currentFunc, result, new ConstInt(1)));
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, endLabel));
 
     // 结果为假
-    currentFunc->getInterCode().addInst(falseLabel);
-    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(0)));
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabel));
+    node->blockInsts.addInst(falseLabel);
+    node->blockInsts.addInst(new MoveInstruction(currentFunc, result, new ConstInt(0)));
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, endLabel));
 
     // 结束标签
-    currentFunc->getInterCode().addInst(new LabelInstruction(currentFunc, end_label));
+    node->blockInsts.addInst(new LabelInstruction(currentFunc, end_label));
     node->val = result;
     return true;
 }
@@ -572,30 +575,29 @@ bool IRGenerator::ir_or(ast_node * node)
     // 左操作数：计算后若为真，跳转到true_label
     ast_node * left = node->sons[0];
     ir_visit_ast_node(left);
+    node->blockInsts.addInst(left->blockInsts);
     auto trueLabel = new LabelInstruction(currentFunc, left_true_label);
-    currentFunc->getInterCode().addInst(
-        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, left->val, trueLabel));
+    node->blockInsts.addInst(new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, left->val, trueLabel));
 
     // 左操作数为假，计算右操作数
     auto falseLabel = new LabelInstruction(currentFunc, left_false_label);
     auto endLabel = new LabelInstruction(currentFunc, end_label);
-    currentFunc->getInterCode().addInst(falseLabel);
+    node->blockInsts.addInst(falseLabel);
     ast_node * right = node->sons[1];
     ir_visit_ast_node(right);
-
+    node->blockInsts.addInst(right->blockInsts);
     // 右操作数若为真，跳转到true_label
-    currentFunc->getInterCode().addInst(
-        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, right->val, trueLabel));
+    node->blockInsts.addInst(new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, right->val, trueLabel));
 
     // 结果为真
-    currentFunc->getInterCode().addInst(trueLabel);
+    node->blockInsts.addInst(trueLabel);
     LocalVariable * result = static_cast<LocalVariable *>(module->newVarValue(IntegerType::getTypeInt()));
-    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(1)));
-    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabel));
+    node->blockInsts.addInst(new MoveInstruction(currentFunc, result, new ConstInt(1)));
+    node->blockInsts.addInst(new GotoInstruction(currentFunc, endLabel));
 
     // 结果为假
-    currentFunc->getInterCode().addInst(new LabelInstruction(currentFunc, end_label));
-    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(0)));
+    node->blockInsts.addInst(new LabelInstruction(currentFunc, end_label));
+    node->blockInsts.addInst(new MoveInstruction(currentFunc, result, new ConstInt(0)));
 
     node->val = result;
     return true;

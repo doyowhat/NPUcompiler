@@ -53,14 +53,10 @@ void BranchInstruction::toString(std::string & str)
             break;
         case IRInstOperator::IRINST_OP_BT:
             // bt condvar, label X
-            std::cerr << condVar << std::endl;
-            std::cerr << Target << std::endl;
             str = "bt " + condVar->getIRName() + ", " + Target->getIRName();
             break;
         case IRInstOperator::IRINST_OP_BF:
             // bf condvar, label X
-            std::cerr << condVar << std::endl;
-            std::cerr << Target << std::endl;
             str = "bf " + condVar->getIRName() + ", " + Target->getIRName();
             break;
         default:

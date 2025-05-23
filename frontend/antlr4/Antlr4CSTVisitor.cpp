@@ -275,7 +275,7 @@ std::any MiniCCSTVisitor::visitStatement(MiniCParser::StatementContext * ctx)
         // continue语句
         return ast_node::New(ast_operator_type::AST_OP_CONTINUE, nullptr);
     }
-    std::cerr << "Unknown statement type!" << std::endl;
+    // std::cerr << "Unknown statement type!" << std::endl;
     return nullptr;
 }
 

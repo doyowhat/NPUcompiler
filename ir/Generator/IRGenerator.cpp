@@ -417,8 +417,8 @@ bool IRGenerator::ir_if(ast_node * node)
     auto trueLabelInst = new LabelInstruction(currentFunc, true_label);
     auto falseLabelInst = new LabelInstruction(currentFunc, false_label);
     auto endLabelInst = new LabelInstruction(currentFunc, end_label);
-
-    // 生成 BF 指令：如果条件为假，跳转到假分支
+    // std::cerr << true_label << ' ' << false_label << ' ' << end_label << std::endl;
+    //  生成 BF 指令：如果条件为假，跳转到假分支
     node->blockInsts.addInst(condNode->blockInsts);
     node->blockInsts.addInst(
         new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, condNode->val, falseLabelInst));
@@ -663,7 +663,7 @@ bool IRGenerator::ir_relop(ast_node * node, IRInstOperator op)
 
     // 生成比较指令，直接将指令作为结果值
     BinaryInstruction * cmpInst =
-        new BinaryInstruction(currentFunc, op, left->val, right->val, IntegerType::getTypeInt());
+        new BinaryInstruction(currentFunc, op, left->val, right->val, IntegerType::getTypeBool());
 
     // 将子节点的指令和当前比较指令添加到block中
     node->blockInsts.addInst(left->blockInsts);

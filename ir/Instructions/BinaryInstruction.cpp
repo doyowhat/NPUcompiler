@@ -61,40 +61,30 @@ void BinaryInstruction::toString(std::string & str)
             str = getIRName() + " = mod " + src1->getIRName() + "," + src2->getIRName();
             break;
 
-        //逻辑指令
-        case IRInstOperator::IRINST_OP_AND_I:
-            // 逻辑与指令，二元运算
-            str = getIRName() + " = and " + src1->getIRName() + "," + src2->getIRName();
-            break;
-        case IRInstOperator::IRINST_OP_OR_I:
-            // 逻辑或指令，二元运算
-            str = getIRName() + " = or " + src1->getIRName() + "," + src2->getIRName();
-            break;
-
         //关系指令
         case IRInstOperator::IRINST_OP_EQ_I:
             // 等于指令，二元运算
-            str = getIRName() + " = eq " + src1->getIRName() + "," + src2->getIRName();
+            str = getIRName() + " =icmp eq " + src1->getIRName() + "," + src2->getIRName();
             break;
         case IRInstOperator::IRINST_OP_NE_I:
             // 不等于指令，二元运算
-            str = getIRName() + " = ne " + src1->getIRName() + "," + src2->getIRName();
+            str = getIRName() + " =icmp ne " + src1->getIRName() + "," + src2->getIRName();
             break;
         case IRInstOperator::IRINST_OP_LT_I:
             // 小于指令，二元运算
-            str = getIRName() + " = lt " + src1->getIRName() + "," + src2->getIRName();
+            str = getIRName() + " =icmp lt " + src1->getIRName() + "," + src2->getIRName();
             break;
         case IRInstOperator::IRINST_OP_LE_I:
             // 小于等于指令，二元运算
-            str = getIRName() + " = le " + src1->getIRName() + "," + src2->getIRName();
+            str = getIRName() + " =icmp le " + src1->getIRName() + "," + src2->getIRName();
             break;
         case IRInstOperator::IRINST_OP_GT_I:
             // 大于指令，二元运算
-            str = getIRName() + " = gt " + src1->getIRName() + "," + src2->getIRName();
+            str = getIRName() + " =icmp gt " + src1->getIRName() + "," + src2->getIRName();
             break;
         case IRInstOperator::IRINST_OP_GE_I:
             // 大于等于指令，二元运算
-            str = getIRName() + " = ge " + src1->getIRName() + "," + src2->getIRName();
+            str = getIRName() + " =icmp ge " + src1->getIRName() + "," + src2->getIRName();
             break;
         default:
             // 未知指令

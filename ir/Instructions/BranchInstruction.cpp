@@ -49,15 +49,15 @@ void BranchInstruction::toString(std::string & str)
     switch (op) {
         case IRInstOperator::IRINST_OP_BC:
             // bc condvar, label X, label Y
-            str = "bc " + condVar->getIRName() + ", " + trueTarget->getIRName() + ", " + falseTarget->getIRName();
+            str = "bc " + condVar->getIRName() + "," + trueTarget->getIRName() + "," + falseTarget->getIRName();
             break;
         case IRInstOperator::IRINST_OP_BT:
             // bt condvar, label X
-            str = "bt " + condVar->getIRName() + ", " + Target->getIRName();
+            str = "bt " + condVar->getIRName() + "," + Target->getIRName();
             break;
         case IRInstOperator::IRINST_OP_BF:
             // bf condvar, label X
-            str = "bf " + condVar->getIRName() + ", " + Target->getIRName();
+            str = "bf " + condVar->getIRName() + "," + Target->getIRName();
             break;
         default:
             // 未知指令

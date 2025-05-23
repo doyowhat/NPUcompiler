@@ -33,7 +33,12 @@ enum class IRInstOperator : std::int8_t {
 
     /// @brief 无条件分支指令
     IRINST_OP_GOTO,
-
+    /// @brief 条件分支指令
+    IRINST_OP_BC,
+    /// @brief 条件为真时跳转指令
+    IRINST_OP_BT,
+    /// @brief 条件为假时跳转指令
+    IRINST_OP_BF,
     /// @brief 整数的加法指令，二元运算
     IRINST_OP_ADD_I,
 
@@ -59,6 +64,25 @@ enum class IRInstOperator : std::int8_t {
     IRINST_OP_ARG,
 
     /* 后续可追加其他的IR指令 */
+    /// @brief 逻辑与指令，二元运算
+    IRINST_OP_AND_I,
+    /// @brief 逻辑或指令，二元运算
+    IRINST_OP_OR_I,
+    /// @brief 逻辑非指令，一元运算
+    IRINST_OP_NOT_I,
+
+    /// @brief 关系相等指令，二元运算
+    IRINST_OP_EQ_I,
+    /// @brief 关系不等指令，二元运算
+    IRINST_OP_NE_I,
+    /// @brief 关系小于指令，二元运算
+    IRINST_OP_LT_I,
+    /// @brief 关系小于等于指令，二元运算
+    IRINST_OP_LE_I,
+    /// @brief 关系大于指令，二元运算
+    IRINST_OP_GT_I,
+    /// @brief 关系大于等于指令，二元运算
+    IRINST_OP_GE_I,
 
     /// @brief 最大指令码，也是无效指令
     IRINST_OP_MAX

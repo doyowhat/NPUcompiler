@@ -33,6 +33,7 @@ public:
     /// @param _func 所属函数
     ///
     explicit LabelInstruction(Function * _func);
+    explicit LabelInstruction(Function * _func, const std::string & _name);
 
     ///
     /// @brief 转换成字符串

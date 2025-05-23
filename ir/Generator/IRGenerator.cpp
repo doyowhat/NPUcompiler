@@ -2,7 +2,7 @@
 /// @file IRGenerator.cpp
 /// @brief AST遍历产生线性IR的源文件
 /// @author zenglj (zenglj@live.com)
-/// @version 1.1
+/// @version 1.2
 /// @date 2024-11-23
 ///
 /// @copyright Copyright (c) 2024
@@ -12,6 +12,7 @@
 /// <tr><th>Date       <th>Version <th>Author  <th>Description
 /// <tr><td>2024-09-29 <td>1.0     <td>zenglj  <td>新建
 /// <tr><td>2024-11-23 <td>1.1     <td>zenglj  <td>表达式版增强
+/// <tr><td>2025-05-23 <td>1.2     <td>zenglj  <td>添加while、break、continue的中间IR支持
 /// </table>
 ///
 #include <cstdint>
@@ -31,6 +32,7 @@
 #include "ExitInstruction.h"
 #include "FuncCallInstruction.h"
 #include "BinaryInstruction.h"
+#include "BranchInstruction.h"
 #include "MoveInstruction.h"
 #include "GotoInstruction.h"
 #include "UnaryInstruction.h"
@@ -48,15 +50,31 @@ IRGenerator::IRGenerator(ast_node * _root, Module * _module) : root(_root), modu
     /* 表达式运算， 加减 */
     ast2ir_handlers[ast_operator_type::AST_OP_SUB] = &IRGenerator::ir_sub;
     ast2ir_handlers[ast_operator_type::AST_OP_ADD] = &IRGenerator::ir_add;
-    ast2ir_handlers[ast_operator_type::AST_OP_MUL] = &IRGenerator::ir_mul; // TODO 乘法
-    ast2ir_handlers[ast_operator_type::AST_OP_DIV] = &IRGenerator::ir_div; // TODO 除法
-    ast2ir_handlers[ast_operator_type::AST_OP_MOD] = &IRGenerator::ir_mod; // TODO 取模
+    ast2ir_handlers[ast_operator_type::AST_OP_MUL] = &IRGenerator::ir_mul;
+    ast2ir_handlers[ast_operator_type::AST_OP_DIV] = &IRGenerator::ir_div;
+    ast2ir_handlers[ast_operator_type::AST_OP_MOD] = &IRGenerator::ir_mod;
+    ast2ir_handlers[ast_operator_type::AST_OP_NEG] = &IRGenerator::ir_neg;
 
-    ast2ir_handlers[ast_operator_type::AST_OP_NEG] = &IRGenerator::ir_neg; // TODO 负号
+    /* 逻辑运算 */
+    ast2ir_handlers[ast_operator_type::AST_OP_AND] = &IRGenerator::ir_and;
+    ast2ir_handlers[ast_operator_type::AST_OP_OR] = &IRGenerator::ir_or;
+    ast2ir_handlers[ast_operator_type::AST_OP_NOT] = &IRGenerator::ir_not;
+
+    /*关系运算*/
+    ast2ir_handlers[ast_operator_type::AST_OP_EQ] = &IRGenerator::ir_eq;
+    ast2ir_handlers[ast_operator_type::AST_OP_NE] = &IRGenerator::ir_ne;
+    ast2ir_handlers[ast_operator_type::AST_OP_LT] = &IRGenerator::ir_lt;
+    ast2ir_handlers[ast_operator_type::AST_OP_LE] = &IRGenerator::ir_le;
+    ast2ir_handlers[ast_operator_type::AST_OP_GT] = &IRGenerator::ir_gt;
+    ast2ir_handlers[ast_operator_type::AST_OP_GE] = &IRGenerator::ir_ge;
     /* 语句 */
     ast2ir_handlers[ast_operator_type::AST_OP_ASSIGN] = &IRGenerator::ir_assign;
     ast2ir_handlers[ast_operator_type::AST_OP_RETURN] = &IRGenerator::ir_return;
-
+    /*控制流语句*/
+    ast2ir_handlers[ast_operator_type::AST_OP_IF] = &IRGenerator::ir_if;
+    ast2ir_handlers[ast_operator_type::AST_OP_WHILE] = &IRGenerator::ir_while;
+    ast2ir_handlers[ast_operator_type::AST_OP_BREAK] = &IRGenerator::ir_break;
+    ast2ir_handlers[ast_operator_type::AST_OP_CONTINUE] = &IRGenerator::ir_continue;
     /* 函数调用 */
     ast2ir_handlers[ast_operator_type::AST_OP_FUNC_CALL] = &IRGenerator::ir_function_call;
 
@@ -148,6 +166,13 @@ bool IRGenerator::ir_compile_unit(ast_node * node)
     return true;
 }
 
+std::string IRGenerator::generateLabel()
+{
+    // 生成一个新的Label
+    static int labelCount = 0;
+    std::string label = "L" + std::to_string(labelCount++);
+    return label;
+}
 /// @brief 函数定义AST节点翻译成线性中间IR
 /// @param node AST节点
 /// @return 翻译是否成功，true：成功，false：失败
@@ -233,8 +258,6 @@ bool IRGenerator::ir_function_define(ast_node * node)
 
     // IR指令追加到当前的节点中
     node->blockInsts.addInst(block_node->blockInsts);
-
-    // 此时，所有指令都加入到当前函数中，也就是node->blockInsts
 
     // node节点的指令移动到函数的IR指令列表中
     irCode.addInst(node->blockInsts);
@@ -372,6 +395,281 @@ bool IRGenerator::ir_block(ast_node * node)
     if (node->needScope) {
         module->leaveScope();
     }
+
+    return true;
+}
+
+bool IRGenerator::ir_if(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc)
+        return false;
+
+    std::string true_label = generateLabel();  // 真分支标签
+    std::string false_label = generateLabel(); // 假分支标签
+    std::string end_label = generateLabel();   // 结束标签
+
+    // 条件表达式（此处假设true为常量1，false为0）
+    ast_node * condNode = node->sons[0];
+    ir_visit_ast_node(condNode);
+
+    // 创建标签对象
+    auto trueLabelInst = new LabelInstruction(currentFunc, true_label);
+    auto falseLabelInst = new LabelInstruction(currentFunc, false_label);
+    auto endLabelInst = new LabelInstruction(currentFunc, end_label);
+
+    // 生成 BF 指令：如果条件为假，跳转到假分支
+    currentFunc->getInterCode().addInst(
+        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, condNode->val, falseLabelInst));
+
+    // 真分支
+    currentFunc->getInterCode().addInst(trueLabelInst);
+    ir_visit_ast_node(node->sons[1]);                                                    // 真分支语句（a=48）
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabelInst)); // 跳转到结束标签
+
+    // 假分支
+    currentFunc->getInterCode().addInst(falseLabelInst);
+    if (node->sons.size() > 2) {
+        ir_visit_ast_node(node->sons[2]); // 假分支语句（a=40）
+    }
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabelInst)); // 跳转到结束标签
+
+    // 结束标签
+    currentFunc->getInterCode().addInst(endLabelInst);
+    return true;
+}
+
+bool IRGenerator::ir_while(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc)
+        return false;
+
+    std::string loop_entry_label = generateLabel();
+    std::string loop_body_label = generateLabel();
+    std::string loop_exit_label = generateLabel();
+
+    // TODO 保存循环上下文（确保LoopContext在IRGenerator.h中声明）
+    loop_contexts.push({loop_entry_label, loop_body_label, loop_exit_label});
+
+    // 循环入口标签
+    auto loopEntryLabel = new LabelInstruction(currentFunc, loop_entry_label);
+    currentFunc->getInterCode().addInst(loopEntryLabel);
+
+    // 条件表达式
+    ast_node * condNode = node->sons[0];
+    ir_visit_ast_node(condNode);
+
+    // 生成BT指令：条件为真时跳转到循环体
+    auto loopBodyLabel = new LabelInstruction(currentFunc, loop_body_label);
+    currentFunc->getInterCode().addInst(
+        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, condNode->val, loopBodyLabel));
+
+    // 循环出口标签（条件为假时直接到达）
+    auto loopExitLabel = new LabelInstruction(currentFunc, loop_exit_label);
+    currentFunc->getInterCode().addInst(loopExitLabel);
+
+    // 循环体入口标签
+    currentFunc->getInterCode().addInst(loopBodyLabel);
+    ir_visit_ast_node(node->sons[1]); // 循环体
+
+    // 无条件跳转到循环条件判断
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, loopEntryLabel));
+
+    loop_contexts.pop();
+    return true;
+}
+
+bool IRGenerator::ir_break(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc || loop_contexts.empty()) {
+        minic_log(LOG_ERROR, "break语句不在循环内部");
+        return false;
+    }
+
+    // 获取循环出口标签
+    const LoopContext & context = loop_contexts.top();
+    auto loopExitLabel = new LabelInstruction(currentFunc, context.loop_exit_label);
+
+    // 生成跳转到出口标签的指令
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, loopExitLabel));
+    return true;
+}
+
+bool IRGenerator::ir_continue(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc || loop_contexts.empty()) {
+        minic_log(LOG_ERROR, "continue语句不在循环内部");
+        return false;
+    }
+
+    // 获取循环入口标签
+    const LoopContext & context = loop_contexts.top();
+    auto loopEntryLabel = new LabelInstruction(currentFunc, context.loop_entry_label);
+
+    // 生成跳转到入口标签的指令
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, loopEntryLabel));
+    return true;
+}
+
+bool IRGenerator::ir_and(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc)
+        return false;
+
+    std::string left_true_label = generateLabel();
+    std::string left_false_label = generateLabel();
+    std::string end_label = generateLabel();
+
+    // 左操作数：计算后若为假，跳转到false_label
+    ast_node * left = node->sons[0];
+    ir_visit_ast_node(left);
+    auto falseLabel = new LabelInstruction(currentFunc, left_false_label);
+    currentFunc->getInterCode().addInst(
+        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, left->val, falseLabel));
+
+    // 左操作数为真，计算右操作数
+    auto trueLabel = new LabelInstruction(currentFunc, left_true_label);
+    currentFunc->getInterCode().addInst(trueLabel);
+    auto endLabel = new LabelInstruction(currentFunc, end_label);
+    ast_node * right = node->sons[1];
+    ir_visit_ast_node(right);
+
+    // 右操作数若为假，跳转到false_label
+    currentFunc->getInterCode().addInst(
+        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BF, right->val, falseLabel));
+
+    // 结果为真
+    currentFunc->getInterCode().addInst(trueLabel); // 复用左操作数的trueLabel
+    LocalVariable * result = static_cast<LocalVariable *>(module->newVarValue(IntegerType::getTypeInt()));
+    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(1)));
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabel));
+
+    // 结果为假
+    currentFunc->getInterCode().addInst(falseLabel);
+    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(0)));
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabel));
+
+    // 结束标签
+    currentFunc->getInterCode().addInst(new LabelInstruction(currentFunc, end_label));
+    node->val = result;
+    return true;
+}
+
+bool IRGenerator::ir_or(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc)
+        return false;
+
+    std::string left_true_label = generateLabel();
+    std::string left_false_label = generateLabel();
+    std::string end_label = generateLabel();
+
+    // 左操作数：计算后若为真，跳转到true_label
+    ast_node * left = node->sons[0];
+    ir_visit_ast_node(left);
+    auto trueLabel = new LabelInstruction(currentFunc, left_true_label);
+    currentFunc->getInterCode().addInst(
+        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, left->val, trueLabel));
+
+    // 左操作数为假，计算右操作数
+    auto falseLabel = new LabelInstruction(currentFunc, left_false_label);
+    auto endLabel = new LabelInstruction(currentFunc, end_label);
+    currentFunc->getInterCode().addInst(falseLabel);
+    ast_node * right = node->sons[1];
+    ir_visit_ast_node(right);
+
+    // 右操作数若为真，跳转到true_label
+    currentFunc->getInterCode().addInst(
+        new BranchInstruction(currentFunc, IRInstOperator::IRINST_OP_BT, right->val, trueLabel));
+
+    // 结果为真
+    currentFunc->getInterCode().addInst(trueLabel);
+    LocalVariable * result = static_cast<LocalVariable *>(module->newVarValue(IntegerType::getTypeInt()));
+    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(1)));
+    currentFunc->getInterCode().addInst(new GotoInstruction(currentFunc, endLabel));
+
+    // 结果为假
+    currentFunc->getInterCode().addInst(new LabelInstruction(currentFunc, end_label));
+    currentFunc->getInterCode().addInst(new MoveInstruction(currentFunc, result, new ConstInt(0)));
+
+    node->val = result;
+    return true;
+}
+
+bool IRGenerator::ir_not(ast_node * node)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc)
+        return false;
+    // 交换真假出口标签
+    std::swap(node->true_label, node->false_label);
+    // 递归处理操作数
+    return ir_visit_ast_node(node->sons[0]);
+}
+
+// 等于（==）
+bool IRGenerator::ir_eq(ast_node * node)
+{
+    return ir_relop(node, IRInstOperator::IRINST_OP_EQ_I);
+}
+
+// 不等于（!=）
+bool IRGenerator::ir_ne(ast_node * node)
+{
+    return ir_relop(node, IRInstOperator::IRINST_OP_NE_I);
+}
+
+// 小于（<）
+bool IRGenerator::ir_lt(ast_node * node)
+{
+    return ir_relop(node, IRInstOperator::IRINST_OP_LT_I);
+}
+
+// 大于（>）
+bool IRGenerator::ir_gt(ast_node * node)
+{
+    return ir_relop(node, IRInstOperator::IRINST_OP_GT_I);
+}
+
+// 小于等于（<=）
+bool IRGenerator::ir_le(ast_node * node)
+{
+    return ir_relop(node, IRInstOperator::IRINST_OP_LE_I);
+}
+
+// 大于等于（>=）
+bool IRGenerator::ir_ge(ast_node * node)
+{
+    return ir_relop(node, IRInstOperator::IRINST_OP_GE_I);
+}
+
+bool IRGenerator::ir_relop(ast_node * node, IRInstOperator op)
+{
+    Function * currentFunc = module->getCurrentFunction();
+    if (!currentFunc)
+        return false;
+
+    ast_node * left = ir_visit_ast_node(node->sons[0]);
+    ast_node * right = ir_visit_ast_node(node->sons[1]);
+    if (!left || !right)
+        return false;
+
+    // 生成比较指令，直接将指令作为结果值
+    BinaryInstruction * cmpInst =
+        new BinaryInstruction(currentFunc, op, left->val, right->val, IntegerType::getTypeInt());
+
+    // 将子节点的指令和当前比较指令添加到block中
+    node->blockInsts.addInst(left->blockInsts);
+    node->blockInsts.addInst(right->blockInsts);
+    node->blockInsts.addInst(cmpInst);
+
+    // 直接将指令作为结果值
+    node->val = cmpInst;
 
     return true;
 }
@@ -540,6 +838,7 @@ bool IRGenerator::ir_mod(ast_node * node)
     node->val = modInst;
     return true;
 }
+
 /// @brief 整数取负AST节点翻译成线性中间IR
 /// @param node AST节点
 /// @return 翻译是否成功，true：成功，false：失败
@@ -562,6 +861,7 @@ bool IRGenerator::ir_neg(ast_node * node)
     node->val = negInst;
     return true;
 }
+
 /// @brief 赋值AST节点翻译成线性中间IR
 /// @param node AST节点
 /// @return 翻译是否成功，true：成功，false：失败

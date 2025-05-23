@@ -17,7 +17,7 @@
 #pragma once
 
 #include <unordered_map>
-
+#include <stack>
 #include "AST.h"
 #include "Module.h"
 
@@ -37,6 +37,7 @@ public:
     bool run();
 
 protected:
+    std::string generateLabel();
     /// @brief 编译单元AST节点翻译成线性中间IR
     /// @param node AST节点
     /// @return 翻译是否成功，true：成功，false：失败
@@ -62,6 +63,23 @@ protected:
     /// @return 翻译是否成功，true：成功，false：失败
     bool ir_block(ast_node * node);
 
+    bool ir_if(ast_node * node);
+    /// @brief 语句块中的whileAST节点翻译成线性中间IR
+    bool ir_while(ast_node * node);
+    bool ir_break(ast_node * node);
+    bool ir_continue(ast_node * node);
+
+    bool ir_and(ast_node * node);
+    bool ir_or(ast_node * node);
+    bool ir_not(ast_node * node);
+
+    bool ir_relop(ast_node * node, IRInstOperator op);
+    bool ir_eq(ast_node * node);
+    bool ir_ne(ast_node * node);
+    bool ir_lt(ast_node * node);
+    bool ir_le(ast_node * node);
+    bool ir_gt(ast_node * node);
+    bool ir_ge(ast_node * node);
     /// @brief 整数加法AST节点翻译成线性中间IR
     /// @param node AST节点
     /// @return 翻译是否成功，true：成功，false：失败
@@ -153,4 +171,11 @@ private:
 
     /// @brief 符号表:模块
     Module * module;
+    struct LoopContext {
+        std::string loop_entry_label;
+        std::string loop_body_label;
+        std::string loop_exit_label;
+    };
+
+    std::stack<LoopContext> loop_contexts; // 循环上下文栈
 };

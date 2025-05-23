@@ -21,6 +21,10 @@ void UnaryInstruction::toString(std::string & str)
             // 取负指令，一元运算
             str = getIRName() + " = neg " + src1->getIRName();
             break;
+        case IRInstOperator::IRINST_OP_NOT_I:
+            // 取反指令，一元运算
+            str = getIRName() + " = not " + src1->getIRName();
+            break;
         default:
             // 未知指令
             Instruction::toString(str);

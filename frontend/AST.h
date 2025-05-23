@@ -112,7 +112,6 @@ enum class ast_operator_type : int {
     AST_OP_IF,
     AST_OP_IF_ELSE,
     AST_OP_WHILE,
-    AST_OP_FOR,
     AST_OP_BREAK,
     AST_OP_CONTINUE,
     /// @brief 最大标识符，表示非法运算符
@@ -124,6 +123,14 @@ enum class ast_operator_type : int {
 ///
 class ast_node {
 public:
+    /// @brief 分支语句的真标签
+    std::string true_label;
+
+    /// @brief 分支语句的假标签
+    std::string false_label;
+
+    /// @brief 分支语句的结束标签
+    std::string end_label;
     /// @brief 节点类型
     ast_operator_type node_type;
 

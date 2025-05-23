@@ -24,6 +24,11 @@
 LabelInstruction::LabelInstruction(Function * _func)
     : Instruction(_func, IRInstOperator::IRINST_OP_LABEL, VoidType::getType())
 {}
+LabelInstruction::LabelInstruction(Function * _func, const std::string & _name)
+    : Instruction(_func, IRInstOperator::IRINST_OP_LABEL, VoidType::getType())
+{
+    this->setIRName(_name);
+}
 
 /// @brief 转换成字符串
 /// @param str 返回指令字符串
